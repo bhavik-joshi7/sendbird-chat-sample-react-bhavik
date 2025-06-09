@@ -586,7 +586,8 @@ const CreateUserForm = ({
 // Helpful functions that call Sendbird
 const loadChannels = async (channelHandlers) => {
     const groupChannelFilter = new GroupChannelFilter();
-    groupChannelFilter.includeEmpty = true;
+    groupChannelFilter.includeEmpty = true;\
+    groupChannelFilter.customTypesFilter = ['Bhavik'];
 
     const collection = sb.groupChannel.createGroupChannelCollection({
         filter: groupChannelFilter,
