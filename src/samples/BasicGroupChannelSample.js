@@ -70,6 +70,15 @@ const BasicGroupChannelSample = (props) => {
 
             updateState({ ...stateRef.current, messages: updatedMessages });
 
+            const currentChannel = stateRef.current.currentlyJoinedChannel;
+            if (!currentChannel || currentChannel.url !== channel.url) {
+                const lastMessage = messages[messages.length - 1];
+                if (Notification.permission === 'granted') {
+                    new Notification(`New message in ${channel.name}`, {
+                        body: lastMessage.message,
+                    });
+                }
+            }
         },
         onMessagesUpdated: (context, channel, messages) => {
             const updatedMessages = [...stateRef.current.messages];
@@ -117,6 +126,11 @@ const BasicGroupChannelSample = (props) => {
         scrollToBottom(channelRef.current)
     }, [state.currentlyJoinedChannel])
 
+    useEffect(() => {
+        if (Notification.permission !== 'granted') {
+            Notification.requestPermission();
+        }
+    }, []);
     useEffect(() => {
         scrollToBottom(channelRef.current, 'smooth')
     }, [state.messages])
