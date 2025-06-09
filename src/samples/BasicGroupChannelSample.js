@@ -372,6 +372,7 @@ const ChannelList = ({
                             className="channel-list-item-name"
                             onClick={() => { handleJoinChannel(channel.url) }}>
                             <ChannelName members={channel.members} />
+                            {channel.customType ? ` (${channel.customType})` : ''}
                             <div className="last-message">{channel.lastMessage?.message}</div>
                         </div>
                         <div>
@@ -625,6 +626,7 @@ const createChannel = async (channelName, userIdsToInvite) => {
         groupChannelParams.invitedUserIds = userIdsToInvite;
         groupChannelParams.name = channelName;
         groupChannelParams.operatorUserIds = userIdsToInvite;
+        groupChannelParams.customType = 'Bhavik';
         const groupChannel = await sb.groupChannel.createChannel(groupChannelParams);
         return [groupChannel, null];
     } catch (error) {
