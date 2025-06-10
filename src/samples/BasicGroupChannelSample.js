@@ -68,7 +68,7 @@ const BasicGroupChannelSample = (props) => {
     const messageHandlers = {
         onMessagesAdded: (context, channel, messages) => {
             const updatedMessages = [...stateRef.current.messages, ...messages];
-            updateState({ ...stateRef.current, messages: updatedMessages }
+            updateState({ ...stateRef.current, messages: updatedMessages });
         },
         onMessagesUpdated: (context, channel, messages) => {
             const updatedMessages = [...stateRef.current.messages];
@@ -121,13 +121,7 @@ const BasicGroupChannelSample = (props) => {
             Notification.requestPermission().then(permission => {
             });
         }
-    }, []);
-
-    useEffect(() => {
-        if (Notification.permission !== 'granted') {
-            Notification.requestPermission();
-        }
-    }, []);
+}, []);
     useEffect(() => {
         scrollToBottom(channelRef.current, 'smooth')
     }, [state.messages])
@@ -277,6 +271,7 @@ const BasicGroupChannelSample = (props) => {
 
     const setupUser = async () => {
         const { userNameInputValue, userIdInputValue } = state;
+
         const sendbirdChat = await SendbirdChat.init({
             appId: SENDBIRD_INFO.appId,
             localCacheEnabled: true,
@@ -306,6 +301,7 @@ const BasicGroupChannelSample = (props) => {
 
         handler.onMessageReceived = (channel, message) => {
             const isViewingChannel = stateRef.current.currentlyJoinedChannel?.url === channel.url;
+            
             if (!isViewingChannel && Notification.permission === "granted") {
                 console.log("Global message received:", message);
                 
@@ -317,7 +313,7 @@ const BasicGroupChannelSample = (props) => {
             }
         };
         sb.groupChannel.addGroupChannelHandler('global-message-handler', handler);
-    };    
+    };
 
     if (state.loading) {
         return <div>Loading...</div>
@@ -616,7 +612,7 @@ const CreateUserForm = ({
 const loadChannels = async (channelHandlers) => {
     const groupChannelFilter = new GroupChannelFilter();
     groupChannelFilter.includeEmpty = true;
-    groupChannelFilter.customTypesFilter = ['Bhavik'];
+    // groupChannelFilter.customTypesFilter = ['Bhavik'];
 
     const collection = sb.groupChannel.createGroupChannelCollection({
         filter: groupChannelFilter,
