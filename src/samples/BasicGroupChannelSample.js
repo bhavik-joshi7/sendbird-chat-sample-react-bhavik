@@ -5,7 +5,8 @@ import {
     GroupChannelFilter,
     GroupChannelListOrder,
     MessageFilter,
-    MessageCollectionInitPolicy
+    MessageCollectionInitPolicy,
+    GroupChannelHandler
 } from '@sendbird/chat/groupChannel';
 
 import { SENDBIRD_INFO } from '../constants/constants';
@@ -67,18 +68,7 @@ const BasicGroupChannelSample = (props) => {
     const messageHandlers = {
         onMessagesAdded: (context, channel, messages) => {
             const updatedMessages = [...stateRef.current.messages, ...messages];
-
-            updateState({ ...stateRef.current, messages: updatedMessages });
-
-            const currentChannel = stateRef.current.currentlyJoinedChannel;
-            if (!currentChannel || currentChannel.url !== channel.url) {
-                const lastMessage = messages[messages.length - 1];
-                if (Notification.permission === 'granted') {
-                    new Notification(`New message in ${channel.name}`, {
-                        body: lastMessage.message,
-                    });
-                }
-            }
+            updateState({ ...stateRef.current, messages: updatedMessages }
         },
         onMessagesUpdated: (context, channel, messages) => {
             const updatedMessages = [...stateRef.current.messages];
@@ -125,6 +115,13 @@ const BasicGroupChannelSample = (props) => {
     useEffect(() => {
         scrollToBottom(channelRef.current)
     }, [state.currentlyJoinedChannel])
+
+    useEffect(() => {
+        if ("Notification" in window && Notification.permission !== 'granted') {
+            Notification.requestPermission().then(permission => {
+            });
+        }
+    }, []);
 
     useEffect(() => {
         if (Notification.permission !== 'granted') {
@@ -295,6 +292,7 @@ const BasicGroupChannelSample = (props) => {
         await sendbirdChat.updateCurrentUserInfo(userUpdateParams);
 
         sb = sendbirdChat;
+        addGlobalMessageListener();
         updateState({ ...state, loading: true });
         const [channels, error] = await loadChannels(channelHandlers);
         if (error) {
@@ -302,7 +300,24 @@ const BasicGroupChannelSample = (props) => {
         }
 
         updateState({ ...state, channels: channels, loading: false, settingUpUser: false });
-    }
+    };
+    const addGlobalMessageListener = () => {
+        const handler = new GroupChannelHandler();
+
+        handler.onMessageReceived = (channel, message) => {
+            const isViewingChannel = stateRef.current.currentlyJoinedChannel?.url === channel.url;
+            if (!isViewingChannel && Notification.permission === "granted") {
+                console.log("Global message received:", message);
+                
+                if (message && message.message) {
+                    new Notification(`New message in ${channel.name}`, {
+                        body: message.message,
+                    });
+                }
+            }
+        };
+        sb.groupChannel.addGroupChannelHandler('global-message-handler', handler);
+    };    
 
     if (state.loading) {
         return <div>Loading...</div>
